@@ -58,8 +58,14 @@
   }
 
   function matchesFilters(food, filters, excludedIds = new Set()) {
-    const { category, meal, budget, spice } = filters;
+    const { category, meal, budget, spice, source = FILTER_ALL } = filters;
+    const isCustom = food.id.startsWith("custom-");
+    const matchesSource =
+      source === FILTER_ALL ||
+      (source === "预置菜单" && !isCustom) ||
+      (source === "美食库" && isCustom);
     return (
+      matchesSource &&
       (category === FILTER_ALL || food.category === category) &&
       (meal === FILTER_ALL || food.meal === meal) &&
       (budget === FILTER_ALL || food.budget === budget) &&

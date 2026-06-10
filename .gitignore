@@ -2,5 +2,6 @@ logs/
 run/
 __pycache__/
 *.pyc
+data/custom_items.json
 data/custom_items.json.bak
 data/.custom_items.json.*.tmp

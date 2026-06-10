@@ -1645,6 +1645,7 @@ a {
   border-radius: var(--radius-sm);
   color: var(--color-text);
   font: inherit;
+  font-size: 16px;
   font-weight: 600;
   background: var(--color-white);
 }

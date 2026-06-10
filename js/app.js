@@ -41,7 +41,8 @@ const state = {
     category: FILTER_ALL,
     meal: FILTER_ALL,
     budget: FILTER_ALL,
-    spice: FILTER_ALL
+    spice: FILTER_ALL,
+    source: FILTER_ALL
   },
   excludedIds: loadStoredExclusions(),
   lastExcludedId: null,
@@ -93,7 +94,8 @@ const elements = {
   formTitle: document.querySelector("#form-title"),
   cancelCustomItem: document.querySelector("#cancel-custom-item"),
   formMessage: document.querySelector("#form-message"),
-  saveCustomItem: document.querySelector("#save-custom-item")
+  saveCustomItem: document.querySelector("#save-custom-item"),
+  sourceFilter: document.querySelector("#source-filter")
 };
 
 function loadStoredExclusions() {
@@ -765,6 +767,7 @@ function bindEvents() {
 
   bindSingleSelect(elements.categoryFilter, "category");
   bindSingleSelect(elements.mealFilter, "meal");
+  bindSingleSelect(elements.sourceFilter, "source");
 
   elements.preferenceFilter.addEventListener("click", (event) => {
     const button = event.target.closest(".filter-chip");
