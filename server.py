@@ -388,7 +388,7 @@ def create_server(host: str, port: int, project_dir: Path | None = None) -> Thre
 def main() -> None:
     parser = argparse.ArgumentParser(description="今天吃什么家庭共享服务")
     parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument("--port", type=int, default=8480)
     args = parser.parse_args()
 
     server = create_server(args.host, args.port)

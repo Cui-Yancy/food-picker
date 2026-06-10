@@ -33,10 +33,10 @@ RUN addgroup --system --gid 1001 appgroup && \
 
 USER appuser
 
-EXPOSE 8080
+EXPOSE 8480
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health')" || exit 1
+    CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8480/api/health')" || exit 1
 
 ENTRYPOINT ["python3", "server.py"]
-CMD ["--host", "0.0.0.0", "--port", "8080"]
+CMD ["--host", "0.0.0.0", "--port", "8480"]

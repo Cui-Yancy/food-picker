@@ -4,7 +4,7 @@ set -u
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST="${HOST:-0.0.0.0}"
-PORT="${PORT:-8080}"
+PORT="${PORT:-8480}"
 RUN_DIR="${PROJECT_DIR}/run"
 LOG_DIR="${PROJECT_DIR}/logs"
 PID_FILE="${RUN_DIR}/app.pid"
