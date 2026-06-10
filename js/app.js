@@ -1,8 +1,9 @@
 "use strict";
 
 const CATEGORY_ALL = "全部";
-const SHUFFLE_DURATION = 1600;
-const SHUFFLE_INTERVAL = 85;
+const SHUFFLE_DURATION = 1900;
+const REDUCED_MOTION_DURATION = 420;
+const CONFETTI_COLORS = ["#ff6655", "#ffc83d", "#9edbc5", "#c5b2ee", "#ffffff"];
 
 // Browsers commonly block fetch() for file:// pages. This compact fallback
 // keeps direct-open mode useful while foods.json remains the canonical dataset.
@@ -113,6 +114,9 @@ const state = {
 const elements = {
   availableCount: document.querySelector("#available-count"),
   filterList: document.querySelector("#filter-list"),
+  machine: document.querySelector(".machine"),
+  drawStage: document.querySelector("#draw-stage"),
+  confettiLayer: document.querySelector("#confetti-layer"),
   foodCard: document.querySelector("#food-card"),
   foodImage: document.querySelector("#food-image"),
   foodName: document.querySelector("#food-name"),
@@ -244,16 +248,37 @@ function renderFood(food, { preview = false } = {}) {
 
 function setDeciding(isDeciding) {
   state.isDeciding = isDeciding;
+  elements.machine.classList.toggle("is-running", isDeciding);
   elements.foodCard.classList.toggle("is-shuffling", isDeciding);
   elements.foodName.classList.toggle("is-rolling", isDeciding);
   elements.decideButton.classList.toggle("is-deciding", isDeciding);
+  elements.foodCard.setAttribute("aria-busy", String(isDeciding));
   elements.resultActions.hidden = true;
   elements.decideButton.disabled = isDeciding;
-  elements.decideLabel.textContent = isDeciding ? "正在翻菜单..." : "再帮我选一个！";
+  elements.decideLabel.textContent = isDeciding ? "正在摇出美味..." : "再帮我选一个！";
 
   document.querySelectorAll(".filter-chip").forEach((button) => {
     button.disabled = isDeciding;
   });
+}
+
+function launchConfetti() {
+  const pieces = Array.from({ length: 22 }, (_, index) => {
+    const piece = document.createElement("span");
+    const angle = (Math.PI * 2 * index) / 22 + Math.random() * 0.35;
+    const distance = 85 + Math.random() * 145;
+
+    piece.className = "confetti";
+    piece.style.setProperty("--confetti-color", CONFETTI_COLORS[index % CONFETTI_COLORS.length]);
+    piece.style.setProperty("--confetti-x", `${Math.cos(angle) * distance}px`);
+    piece.style.setProperty("--confetti-y", `${Math.sin(angle) * distance - 35}px`);
+    piece.style.setProperty("--confetti-rotate", `${Math.random() * 600 - 300}deg`);
+    piece.style.animationDelay = `${Math.random() * 90}ms`;
+    return piece;
+  });
+
+  elements.confettiLayer.replaceChildren(...pieces);
+  window.setTimeout(() => elements.confettiLayer.replaceChildren(), 1100);
 }
 
 function revealFood(food) {
@@ -261,12 +286,46 @@ function revealFood(food) {
   renderFood(food);
   setDeciding(false);
 
+  elements.drawStage.textContent = "美味已开奖";
   elements.foodCard.classList.remove("is-revealed");
   void elements.foodCard.offsetWidth;
   elements.foodCard.classList.add("is-revealed");
+  launchConfetti();
   elements.resultActions.hidden = false;
   setStatus(`就是它了：${food.name}！`);
   updateAvailability();
+}
+
+function runPrizeRoll(foods, onComplete) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const duration = reduceMotion ? REDUCED_MOTION_DURATION : SHUFFLE_DURATION;
+  const startedAt = performance.now();
+
+  function tick(now) {
+    const elapsed = now - startedAt;
+    const progress = Math.min(elapsed / duration, 1);
+
+    renderFood(getRandomItem(foods), { preview: true });
+
+    if (progress < 0.42) {
+      elements.drawStage.textContent = "高速滚动中";
+    } else if (progress < 0.78) {
+      elements.drawStage.textContent = "正在锁定美味";
+    } else {
+      elements.drawStage.textContent = "马上揭晓";
+    }
+
+    if (progress >= 1) {
+      state.shuffleTimer = null;
+      onComplete();
+      return;
+    }
+
+    const nextDelay = reduceMotion ? 130 : 58 + Math.pow(progress, 2.4) * 165;
+    state.shuffleTimer = window.setTimeout(() => requestAnimationFrame(tick), nextDelay);
+  }
+
+  requestAnimationFrame(tick);
 }
 
 function decide() {
@@ -286,15 +345,9 @@ function decide() {
   renderTags(["挑选中", "马上揭晓"]);
   elements.foodReason.textContent = "菜单快速翻动中，答案马上出现。";
 
-  state.shuffleTimer = window.setInterval(() => {
-    renderFood(getRandomItem(availableFoods), { preview: true });
-  }, SHUFFLE_INTERVAL);
-
-  window.setTimeout(() => {
-    window.clearInterval(state.shuffleTimer);
-    state.shuffleTimer = null;
+  runPrizeRoll(availableFoods, () => {
     revealFood(getRandomItem(resultPool));
-  }, SHUFFLE_DURATION);
+  });
 }
 
 function selectCategory(category, selectedButton) {
@@ -304,6 +357,7 @@ function selectCategory(category, selectedButton) {
 
   state.selectedCategory = category;
   state.currentFood = null;
+  elements.drawStage.textContent = "等待开奖";
   elements.resultActions.hidden = true;
 
   document.querySelectorAll(".filter-chip").forEach((button) => {
@@ -335,6 +389,7 @@ function excludeCurrentFood() {
 
 function resetExclusions() {
   state.excludedIds.clear();
+  elements.drawStage.textContent = "等待开奖";
   setStatus("已恢复完整菜单，所有菜品都可以再次抽到。");
   updateAvailability();
 }

@@ -14,17 +14,29 @@
   <body>
     <div class="background-shape shape-one" aria-hidden="true"></div>
     <div class="background-shape shape-two" aria-hidden="true"></div>
+    <div class="floating-foods" aria-hidden="true">
+      <span class="floating-food floating-food-one">🍕</span>
+      <span class="floating-food floating-food-two">🥟</span>
+      <span class="floating-food floating-food-three">🍜</span>
+      <span class="floating-food floating-food-four">🍙</span>
+      <span class="floating-food floating-food-five">🥐</span>
+      <span class="floating-food floating-food-six">🍔</span>
+    </div>
 
     <main class="app-shell">
       <header class="app-header">
-        <p class="eyebrow">TODAY'S MENU</p>
-        <h1>今天吃什么<span aria-hidden="true">？</span></h1>
-        <p class="subtitle">选择困难先放一边，让好运替你点餐。</p>
+        <div class="brand-pill">
+          <span aria-hidden="true">✦</span>
+          FOOD LUCKY BOX
+          <span aria-hidden="true">✦</span>
+        </div>
+        <h1>今天吃啥<span aria-hidden="true">？</span></h1>
+        <p class="subtitle">投下一点好运，抽走今天的美味答案。</p>
       </header>
 
       <section class="filter-section" aria-labelledby="filter-title">
         <div class="section-heading">
-          <h2 id="filter-title">今天想吃哪一类？</h2>
+          <h2 id="filter-title"><span aria-hidden="true">🎟️</span> 先选一张口味券</h2>
           <span id="available-count" class="available-count">正在准备菜单...</span>
         </div>
         <div id="filter-list" class="filter-list" role="group" aria-label="菜品分类筛选">
@@ -49,35 +61,69 @@
       </section>
 
       <section class="decision-stage" aria-labelledby="food-name">
-        <div id="food-card" class="food-card">
-          <div class="tape tape-left" aria-hidden="true"></div>
-          <div class="tape tape-right" aria-hidden="true"></div>
-
-          <div class="food-visual">
-            <div class="spark spark-one" aria-hidden="true">✦</div>
-            <div class="spark spark-two" aria-hidden="true">●</div>
-            <div id="food-image" class="food-image" role="img" aria-label="等待抽取的餐盘">🍽️</div>
+        <div class="machine">
+          <div class="machine-marquee" aria-hidden="true">
+            <span class="marquee-light"></span>
+            <span class="marquee-light"></span>
+            <span class="marquee-light"></span>
+            <strong>今日美食盲盒</strong>
+            <span class="marquee-light"></span>
+            <span class="marquee-light"></span>
+            <span class="marquee-light"></span>
           </div>
 
-          <div class="food-content">
-            <div class="food-meta">
-              <span id="food-cuisine" class="cuisine-badge">好运菜单</span>
-              <span id="food-category" class="category-text">全部分类</span>
+          <div class="machine-screen">
+            <div class="screen-label">
+              <span class="live-dot" aria-hidden="true"></span>
+              <span id="draw-stage">等待开奖</span>
             </div>
-            <h2 id="food-name">准备好了吗？</h2>
-            <div id="food-tags" class="tag-list" aria-label="菜品标签">
-              <span class="food-tag">随机</span>
-              <span class="food-tag">惊喜</span>
-            </div>
-            <p id="food-reason" class="food-reason">按下按钮，让今天这一顿变得简单一点。</p>
-          </div>
-        </div>
 
-        <div class="primary-actions">
-          <button id="decide-button" class="button button-primary" type="button" disabled>
-            <span class="button-icon" aria-hidden="true">✦</span>
-            <span class="button-label">菜单加载中...</span>
-          </button>
+            <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+            <div id="food-card" class="food-card">
+              <div class="food-visual">
+                <div class="orbit orbit-one" aria-hidden="true"></div>
+                <div class="orbit orbit-two" aria-hidden="true"></div>
+                <div class="spark spark-one" aria-hidden="true">✦</div>
+                <div class="spark spark-two" aria-hidden="true">✦</div>
+                <div id="food-image" class="food-image" role="img" aria-label="等待抽取的餐盘">
+                  🍽️
+                </div>
+              </div>
+
+              <div class="food-content">
+                <div class="food-meta">
+                  <span id="food-cuisine" class="cuisine-badge">好运菜单</span>
+                  <span id="food-category" class="category-text">全部分类</span>
+                </div>
+                <div class="name-window">
+                  <span class="window-glare" aria-hidden="true"></span>
+                  <h2 id="food-name">准备好了吗？</h2>
+                </div>
+                <div id="food-tags" class="tag-list" aria-label="菜品标签">
+                  <span class="food-tag">随机</span>
+                  <span class="food-tag">惊喜</span>
+                </div>
+                <p id="food-reason" class="food-reason">按下按钮，让今天这一顿变得简单一点。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="machine-controls">
+            <div class="coin-slot" aria-hidden="true">
+              <span></span>
+              LUCK
+            </div>
+            <div class="primary-actions">
+              <button id="decide-button" class="button button-primary" type="button" disabled>
+                <span class="button-icon" aria-hidden="true">✦</span>
+                <span class="button-label">菜单加载中...</span>
+              </button>
+              <p class="button-hint">点击启动 · 好运开奖</p>
+            </div>
+            <div class="machine-knob" aria-hidden="true">
+              <span></span>
+            </div>
+          </div>
         </div>
 
         <div id="result-actions" class="result-actions" hidden>
@@ -95,7 +141,7 @@
       </section>
 
       <footer class="app-footer">
-        <p>认真吃饭，快乐加倍 <span aria-hidden="true">♡</span></p>
+        <p>每次选择，都是一份美味签 <span aria-hidden="true">♡</span></p>
         <button id="reset-exclusions" class="text-button" type="button" hidden>
           恢复已跳过的菜品
         </button>
