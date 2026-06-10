@@ -912,7 +912,7 @@ noscript {
 
 @keyframes window-scan {
   to {
-    left: 110%;
+    transform: translateX(460%) rotate(18deg);
   }
 }
 
@@ -1128,5 +1128,284 @@ noscript {
 
   .floating-foods {
     display: none;
+  }
+}
+
+/* Product-flow refinements */
+button,
+a {
+  touch-action: manipulation;
+}
+
+.filter-section {
+  margin: var(--space-6) auto var(--space-5);
+}
+
+.available-count {
+  font-size: 0.8rem;
+}
+
+.filter-stack {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.filter-row {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-label {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.filter-scroll {
+  position: relative;
+  min-width: 0;
+}
+
+.filter-scroll::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: -1px;
+  width: 28px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 241, 224, 0.96));
+  content: "";
+  pointer-events: none;
+}
+
+.filter-row .filter-list {
+  margin-inline: 0;
+  padding: var(--space-1) 28px var(--space-1) 0;
+}
+
+.filter-chip {
+  padding: 8px 14px;
+}
+
+.quick-action {
+  margin-bottom: var(--space-4);
+}
+
+.quick-decide-button {
+  width: 100%;
+}
+
+.quick-action p {
+  margin: 9px 0 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.screen-label {
+  font-size: 0.75rem;
+}
+
+.food-visual {
+  min-height: 148px;
+}
+
+.food-image {
+  width: 108px;
+  height: 108px;
+  font-size: 3.8rem;
+}
+
+.food-content {
+  padding: var(--space-4) var(--space-4) var(--space-5);
+}
+
+.food-content h2 {
+  font-size: clamp(1.7rem, 8vw, 2.7rem);
+}
+
+.food-tag {
+  font-size: 0.76rem;
+}
+
+.food-reason {
+  font-size: 0.92rem;
+}
+
+.result-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.button-link {
+  width: 100%;
+  min-height: 50px;
+  padding: 11px var(--space-4);
+  border: 2px solid rgba(255, 102, 85, 0.16);
+  color: var(--color-primary-dark);
+  font-size: 0.86rem;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.status-message,
+.text-button {
+  font-size: 0.82rem;
+}
+
+.undo-button {
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .filter-stack {
+    gap: var(--space-3);
+  }
+
+  .filter-row {
+    grid-template-columns: 50px minmax(0, 1fr);
+  }
+
+  .filter-scroll::after {
+    display: none;
+  }
+
+  .filter-row .filter-list {
+    padding: var(--space-1) 0;
+  }
+
+  .quick-action {
+    display: none;
+  }
+
+  .food-visual {
+    min-height: 340px;
+  }
+
+  .food-image {
+    width: 158px;
+    height: 158px;
+    font-size: 5.4rem;
+  }
+
+  .food-content {
+    padding: var(--space-8);
+  }
+
+  .food-content h2 {
+    font-size: clamp(2.2rem, 5vw, 3rem);
+  }
+
+  .result-actions {
+    grid-template-columns: repeat(4, minmax(0, 160px));
+  }
+}
+
+@media (max-width: 639px) {
+  .app-shell {
+    width: min(100% - var(--space-4), 820px);
+    padding-top: var(--space-5);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  }
+
+  .brand-pill {
+    margin-bottom: var(--space-2);
+  }
+
+  .app-header h1 {
+    font-size: clamp(2.6rem, 15vw, 3.7rem);
+  }
+
+  .subtitle {
+    margin-top: var(--space-2);
+  }
+
+  .section-heading {
+    margin-bottom: var(--space-2);
+  }
+
+  .machine {
+    padding: 10px;
+    border-radius: 28px;
+  }
+
+  .machine-marquee {
+    min-height: 44px;
+    margin-bottom: 10px;
+  }
+
+  .machine-screen {
+    padding: 24px 8px 8px;
+  }
+
+  .food-visual::after {
+    width: 180px;
+    height: 180px;
+  }
+
+  .orbit-one,
+  .orbit-two {
+    width: 132px;
+    height: 62px;
+  }
+
+  .name-window {
+    min-height: 62px;
+  }
+
+  .tag-list {
+    margin-bottom: var(--space-3);
+  }
+
+  .machine-controls {
+    padding-top: var(--space-4);
+  }
+
+  .button-hint {
+    margin-top: 10px;
+    font-size: 0.7rem;
+  }
+
+  .floating-foods {
+    display: none;
+  }
+
+  .background-shape {
+    animation: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .app-header h1 {
+    font-size: 2.65rem;
+    letter-spacing: -0.08em;
+  }
+
+  .filter-row {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .filter-chip {
+    padding-inline: 12px;
+  }
+
+  .machine-controls {
+    grid-template-columns: 30px minmax(0, 1fr) 30px;
+  }
+
+  .coin-slot {
+    transform: scale(0.85);
+  }
+
+  .machine-knob {
+    width: 34px;
+    height: 34px;
+    border-width: 3px;
+  }
+
+  .machine-knob span {
+    height: 20px;
   }
 }

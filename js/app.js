@@ -1,119 +1,32 @@
 "use strict";
 
-const CATEGORY_ALL = "全部";
-const SHUFFLE_DURATION = 1900;
-const REDUCED_MOTION_DURATION = 420;
+const { FILTER_ALL, matchesFilters, validateFoods } = FoodRules;
+const DRAW_DURATION = 900;
+const STORAGE_KEY = "food-lucky-box-exclusions-v1";
 const CONFETTI_COLORS = ["#ff6655", "#ffc83d", "#9edbc5", "#c5b2ee", "#ffffff"];
-
-// Browsers commonly block fetch() for file:// pages. This compact fallback
-// keeps direct-open mode useful while foods.json remains the canonical dataset.
-const OFFLINE_FOOD_ROWS = [
-  ["cn-001", "宫保鸡丁", "中餐", "川菜", "🍗"],
-  ["cn-002", "麻婆豆腐", "中餐", "川菜", "🌶️"],
-  ["cn-003", "鱼香肉丝", "中餐", "川菜", "🥢"],
-  ["cn-004", "回锅肉", "中餐", "川菜", "🥓"],
-  ["cn-005", "水煮鱼", "中餐", "川菜", "🐟"],
-  ["cn-006", "糖醋里脊", "中餐", "鲁菜", "🍖"],
-  ["cn-007", "红烧肉", "中餐", "本帮菜", "🍖"],
-  ["cn-008", "白切鸡", "中餐", "粤菜", "🍗"],
-  ["cn-009", "叉烧饭", "中餐", "粤菜", "🍱"],
-  ["cn-010", "煲仔饭", "中餐", "粤菜", "🍚"],
-  ["cn-011", "广式烧鹅", "中餐", "粤菜", "🍗"],
-  ["cn-012", "梅菜扣肉", "中餐", "客家菜", "🥩"],
-  ["cn-013", "小炒黄牛肉", "中餐", "湘菜", "🥩"],
-  ["cn-014", "剁椒鱼头", "中餐", "湘菜", "🐟"],
-  ["cn-015", "东坡肉", "中餐", "浙菜", "🍖"],
-  ["cn-016", "西湖醋鱼", "中餐", "浙菜", "🐟"],
-  ["cn-017", "番茄炒蛋", "中餐", "家常菜", "🍅"],
-  ["cn-018", "地三鲜", "中餐", "东北菜", "🍆"],
-  ["cn-019", "锅包肉", "中餐", "东北菜", "🍖"],
-  ["cn-020", "黄焖鸡米饭", "中餐", "鲁菜", "🍲"],
-  ["cn-021", "海南鸡饭", "中餐", "海南菜", "🍗"],
-  ["cn-022", "扬州炒饭", "中餐", "淮扬菜", "🍛"],
-  ["cn-023", "葱爆羊肉", "中餐", "京菜", "🥩"],
-  ["cn-024", "烤鸭卷饼", "中餐", "京菜", "🫓"],
-  ["noodle-001", "兰州牛肉面", "面食", "西北面食", "🍜"],
-  ["noodle-002", "重庆小面", "面食", "重庆面食", "🍜"],
-  ["noodle-003", "武汉热干面", "面食", "湖北面食", "🍝"],
-  ["noodle-004", "老北京炸酱面", "面食", "北京面食", "🍜"],
-  ["noodle-005", "山西刀削面", "面食", "山西面食", "🍜"],
-  ["noodle-006", "陕西油泼面", "面食", "陕西面食", "🍜"],
-  ["noodle-007", "岐山臊子面", "面食", "陕西面食", "🍜"],
-  ["noodle-008", "河南烩面", "面食", "河南面食", "🍜"],
-  ["noodle-009", "上海葱油拌面", "面食", "本帮面食", "🍝"],
-  ["noodle-010", "宜宾燃面", "面食", "四川面食", "🍜"],
-  ["noodle-011", "螺蛳粉", "面食", "广西米粉", "🍜"],
-  ["noodle-012", "桂林米粉", "面食", "广西米粉", "🍜"],
-  ["noodle-013", "云南过桥米线", "面食", "云南米线", "🍜"],
-  ["noodle-014", "广东云吞面", "面食", "粤式面食", "🥟"],
-  ["noodle-015", "牛肉板面", "面食", "安徽面食", "🍜"],
-  ["noodle-016", "猪肉白菜水饺", "面食", "北方面食", "🥟"],
-  ["hot-001", "重庆麻辣火锅", "火锅烧烤", "重庆", "🍲"],
-  ["hot-002", "潮汕牛肉火锅", "火锅烧烤", "潮汕", "🥩"],
-  ["hot-003", "老北京铜锅涮肉", "火锅烧烤", "北京", "🍲"],
-  ["hot-004", "椰子鸡火锅", "火锅烧烤", "海南", "🥥"],
-  ["hot-005", "酸汤鱼火锅", "火锅烧烤", "贵州", "🐟"],
-  ["hot-006", "串串香", "火锅烧烤", "四川", "🍢"],
-  ["hot-007", "麻辣香锅", "火锅烧烤", "川味", "🍲"],
-  ["hot-008", "东北烤串", "火锅烧烤", "东北", "🍢"],
-  ["hot-009", "新疆羊肉串", "火锅烧烤", "新疆", "🍢"],
-  ["hot-010", "韩式烤肉", "火锅烧烤", "韩国料理", "🥓"],
-  ["hot-011", "广式打边炉", "火锅烧烤", "粤菜", "🍲"],
-  ["hot-012", "纸上烤鱼", "火锅烧烤", "川味", "🐟"],
-  ["asia-001", "三文鱼寿司", "日料韩餐", "日本料理", "🍣"],
-  ["asia-002", "日式豚骨拉面", "日料韩餐", "日本料理", "🍜"],
-  ["asia-003", "日式咖喱饭", "日料韩餐", "日本料理", "🍛"],
-  ["asia-004", "鳗鱼饭", "日料韩餐", "日本料理", "🍱"],
-  ["asia-005", "天妇罗定食", "日料韩餐", "日本料理", "🍤"],
-  ["asia-006", "大阪烧", "日料韩餐", "日本料理", "🥞"],
-  ["asia-007", "日式炸猪排", "日料韩餐", "日本料理", "🍛"],
-  ["asia-008", "韩式石锅拌饭", "日料韩餐", "韩国料理", "🍚"],
-  ["asia-009", "韩式部队锅", "日料韩餐", "韩国料理", "🍲"],
-  ["asia-010", "韩式炸鸡", "日料韩餐", "韩国料理", "🍗"],
-  ["asia-011", "泡菜五花肉炒饭", "日料韩餐", "韩国料理", "🍛"],
-  ["asia-012", "韩式冷面", "日料韩餐", "韩国料理", "🍜"],
-  ["west-001", "经典牛肉汉堡", "西餐快餐", "美式快餐", "🍔"],
-  ["west-002", "香辣鸡腿堡", "西餐快餐", "美式快餐", "🍔"],
-  ["west-003", "玛格丽特披萨", "西餐快餐", "意大利菜", "🍕"],
-  ["west-004", "意大利肉酱面", "西餐快餐", "意大利菜", "🍝"],
-  ["west-005", "奶油培根意面", "西餐快餐", "意大利菜", "🍝"],
-  ["west-006", "黑椒牛排", "西餐快餐", "西餐", "🥩"],
-  ["west-007", "炸鱼薯条", "西餐快餐", "英国菜", "🍟"],
-  ["west-008", "墨西哥鸡肉卷", "西餐快餐", "墨西哥风味", "🌯"],
-  ["west-009", "越南牛肉河粉", "西餐快餐", "东南亚料理", "🍜"],
-  ["west-010", "泰式冬阴功汤面", "西餐快餐", "东南亚料理", "🍜"],
-  ["west-011", "泰式菠萝炒饭", "西餐快餐", "东南亚料理", "🍍"],
-  ["west-012", "新加坡海南鸡饭", "西餐快餐", "东南亚料理", "🍗"],
-  ["west-013", "马来西亚叻沙", "西餐快餐", "东南亚料理", "🍜"],
-  ["west-014", "印度黄油鸡咖喱", "西餐快餐", "印度料理", "🍛"],
-  ["light-001", "鸡胸肉能量碗", "轻食甜品", "轻食", "🥗"],
-  ["light-002", "牛油果虾仁沙拉", "轻食甜品", "轻食", "🥗"],
-  ["light-003", "金枪鱼全麦三明治", "轻食甜品", "轻食", "🥪"],
-  ["light-004", "烟熏三文鱼贝果", "轻食甜品", "早午餐", "🥯"],
-  ["light-005", "希腊酸奶水果碗", "轻食甜品", "轻食", "🥣"],
-  ["light-006", "凯撒鸡肉沙拉", "轻食甜品", "西式轻食", "🥗"],
-  ["light-007", "法式可颂", "轻食甜品", "法式烘焙", "🥐"],
-  ["light-008", "提拉米苏", "轻食甜品", "意式甜品", "🍰"],
-  ["light-009", "巴斯克芝士蛋糕", "轻食甜品", "西式甜品", "🍰"],
-  ["light-010", "芒果糯米饭", "轻食甜品", "泰式甜品", "🥭"],
-  ["light-011", "杨枝甘露", "轻食甜品", "港式甜品", "🥭"],
-  ["light-012", "双皮奶", "轻食甜品", "广式甜品", "🥛"],
-  ["light-013", "红豆抹茶刨冰", "轻食甜品", "日式甜品", "🍧"],
-  ["light-014", "鲜果舒芙蕾", "轻食甜品", "西式甜品", "🥞"]
-];
 
 const state = {
   foods: [],
-  selectedCategory: CATEGORY_ALL,
-  excludedIds: new Set(),
+  filters: {
+    category: FILTER_ALL,
+    meal: FILTER_ALL,
+    budget: FILTER_ALL,
+    spice: FILTER_ALL
+  },
+  excludedIds: loadStoredExclusions(),
+  lastExcludedId: null,
   currentFood: null,
+  pendingFood: null,
   isDeciding: false,
-  shuffleTimer: null
+  skipRequested: false,
+  drawTimer: null
 };
 
 const elements = {
   availableCount: document.querySelector("#available-count"),
-  filterList: document.querySelector("#filter-list"),
+  categoryFilter: document.querySelector("#category-filter"),
+  mealFilter: document.querySelector("#meal-filter"),
+  preferenceFilter: document.querySelector("#preference-filter"),
   machine: document.querySelector(".machine"),
   drawStage: document.querySelector("#draw-stage"),
   confettiLayer: document.querySelector("#confetti-layer"),
@@ -126,75 +39,91 @@ const elements = {
   foodReason: document.querySelector("#food-reason"),
   decideButton: document.querySelector("#decide-button"),
   decideLabel: document.querySelector("#decide-button .button-label"),
+  quickDecideButton: document.querySelector("#quick-decide-button"),
   resultActions: document.querySelector("#result-actions"),
   againButton: document.querySelector("#again-button"),
   excludeButton: document.querySelector("#exclude-button"),
+  nearbyLink: document.querySelector("#nearby-link"),
+  takeoutLink: document.querySelector("#takeout-link"),
   statusMessage: document.querySelector("#status-message"),
+  undoExclusion: document.querySelector("#undo-exclusion"),
   resetExclusions: document.querySelector("#reset-exclusions")
 };
 
-function createOfflineFoods() {
-  return OFFLINE_FOOD_ROWS.map(([id, name, category, cuisine, emoji]) => ({
-    id,
-    name,
-    category,
-    cuisine,
-    emoji,
-    image: "",
-    tags: [cuisine, category],
-    reason: `${name}很适合现在的心情，跟着这次随机选择去尝尝吧。`
-  }));
-}
-
-async function loadFoods() {
+function loadStoredExclusions() {
   try {
-    const response = await fetch("data/foods.json");
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const foods = await response.json();
-    if (!Array.isArray(foods) || foods.length === 0) {
-      throw new Error("菜单数据为空");
-    }
-
-    return foods;
-  } catch (error) {
-    console.info("foods.json 无法通过 fetch 加载，已切换到直接打开模式。", error);
-    return createOfflineFoods();
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return new Set(Array.isArray(stored) ? stored : []);
+  } catch {
+    return new Set();
   }
 }
 
+function persistExclusions() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.excludedIds]));
+  } catch {
+    // Storage can be unavailable in privacy modes; the current session still works.
+  }
+}
+
+async function loadFoods() {
+  const response = await fetch("data/foods.json");
+  if (!response.ok) {
+    throw new Error(`菜单请求失败：HTTP ${response.status}`);
+  }
+  return validateFoods(await response.json());
+}
+
 function getAvailableFoods() {
-  return state.foods.filter((food) => {
-    const categoryMatches =
-      state.selectedCategory === CATEGORY_ALL || food.category === state.selectedCategory;
-    return categoryMatches && !state.excludedIds.has(food.id);
-  });
+  return state.foods.filter((food) =>
+    matchesFilters(food, state.filters, state.excludedIds)
+  );
 }
 
 function getRandomItem(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function createFilterButton(label, value, active = false) {
+  const button = document.createElement("button");
+  button.className = `filter-chip${active ? " is-active" : ""}`;
+  button.type = "button";
+  button.dataset.value = value;
+  button.setAttribute("aria-pressed", String(active));
+  button.textContent = label;
+  return button;
+}
+
+function renderCategoryFilters() {
+  const categories = [...new Set(state.foods.map((food) => food.category))];
+  elements.categoryFilter.replaceChildren(
+    createFilterButton("全部", FILTER_ALL, true),
+    ...categories.map((category) => createFilterButton(category, category))
+  );
+}
+
 function updateAvailability() {
   const available = getAvailableFoods();
-  const categoryTotal = state.foods.filter(
-    (food) => state.selectedCategory === CATEGORY_ALL || food.category === state.selectedCategory
+  const excludedInView = state.foods.filter(
+    (food) =>
+      state.excludedIds.has(food.id) &&
+      matchesFilters(food, state.filters, new Set())
   ).length;
-  const hiddenCount = categoryTotal - available.length;
 
   elements.availableCount.textContent =
-    hiddenCount > 0
-      ? `还有 ${available.length} 道可选 · 已跳过 ${hiddenCount} 道`
-      : `共有 ${available.length} 道可选`;
+    excludedInView > 0
+      ? `${available.length} 道符合 · 已跳过 ${excludedInView} 道`
+      : `${available.length} 道符合条件`;
 
   elements.resetExclusions.hidden = state.excludedIds.size === 0;
-  elements.decideButton.disabled = state.isDeciding || available.length === 0;
+  const hasChoices = available.length > 0;
+  elements.decideButton.disabled = !hasChoices;
+  elements.quickDecideButton.disabled = !hasChoices;
 
-  if (available.length === 0) {
-    setStatus("这个分类已经全部跳过啦，换个分类或恢复菜单吧。", true);
-    elements.decideLabel.textContent = "暂时没有可选菜品";
+  if (!hasChoices) {
+    setStatus("没有符合全部条件的菜，放宽一项偏好试试。", true);
+    elements.decideLabel.textContent = "没有符合条件的菜";
   } else if (!state.isDeciding) {
     elements.decideLabel.textContent = state.currentFood ? "再帮我选一个！" : "帮我决定！";
   }
@@ -219,31 +148,24 @@ function renderTags(tags = []) {
 function renderFood(food, { preview = false } = {}) {
   elements.foodName.textContent = food.name;
   elements.foodCuisine.textContent = food.cuisine;
-  elements.foodCategory.textContent = food.category;
-
-  if (food.image) {
-    const image = document.createElement("img");
-    image.src = food.image;
-    image.alt = "";
-    image.loading = "lazy";
-    image.addEventListener(
-      "error",
-      () => {
-        elements.foodImage.textContent = food.emoji || "🍽️";
-      },
-      { once: true }
-    );
-    elements.foodImage.replaceChildren(image);
-  } else {
-    elements.foodImage.textContent = food.emoji || "🍽️";
-  }
-
-  elements.foodImage.setAttribute("aria-label", `${food.name}的卡通图标`);
+  elements.foodCategory.textContent = `${food.category} · ${food.meal}`;
+  elements.foodImage.textContent = food.emoji || "🍽️";
+  elements.foodImage.setAttribute("aria-label", `${food.name}的图标`);
 
   if (!preview) {
-    renderTags(food.tags);
+    renderTags([...food.tags, food.budget]);
     elements.foodReason.textContent = food.reason;
   }
+}
+
+function renderPlaceholder() {
+  elements.foodImage.textContent = "🍽️";
+  elements.foodImage.setAttribute("aria-label", "等待抽取的餐盘");
+  elements.foodCuisine.textContent = "好运菜单";
+  elements.foodCategory.textContent = "等待选择";
+  elements.foodName.textContent = "准备好了吗？";
+  renderTags(["随机", "惊喜"]);
+  elements.foodReason.textContent = "按下按钮，让今天这一顿变得简单一点。";
 }
 
 function setDeciding(isDeciding) {
@@ -254,8 +176,11 @@ function setDeciding(isDeciding) {
   elements.decideButton.classList.toggle("is-deciding", isDeciding);
   elements.foodCard.setAttribute("aria-busy", String(isDeciding));
   elements.resultActions.hidden = true;
-  elements.decideButton.disabled = isDeciding;
-  elements.decideLabel.textContent = isDeciding ? "正在摇出美味..." : "再帮我选一个！";
+  elements.undoExclusion.hidden = true;
+  elements.decideLabel.textContent = isDeciding ? "点击立即揭晓" : "再帮我选一个！";
+  elements.quickDecideButton.querySelector("span:last-child").textContent = isDeciding
+    ? "立即揭晓"
+    : "马上帮我选";
 
   document.querySelectorAll(".filter-chip").forEach((button) => {
     button.disabled = isDeciding;
@@ -263,74 +188,107 @@ function setDeciding(isDeciding) {
 }
 
 function launchConfetti() {
-  const pieces = Array.from({ length: 22 }, (_, index) => {
-    const piece = document.createElement("span");
-    const angle = (Math.PI * 2 * index) / 22 + Math.random() * 0.35;
-    const distance = 85 + Math.random() * 145;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
 
+  const pieces = Array.from({ length: 14 }, (_, index) => {
+    const piece = document.createElement("span");
+    const angle = (Math.PI * 2 * index) / 14 + Math.random() * 0.35;
+    const distance = 75 + Math.random() * 115;
     piece.className = "confetti";
     piece.style.setProperty("--confetti-color", CONFETTI_COLORS[index % CONFETTI_COLORS.length]);
     piece.style.setProperty("--confetti-x", `${Math.cos(angle) * distance}px`);
-    piece.style.setProperty("--confetti-y", `${Math.sin(angle) * distance - 35}px`);
-    piece.style.setProperty("--confetti-rotate", `${Math.random() * 600 - 300}deg`);
-    piece.style.animationDelay = `${Math.random() * 90}ms`;
+    piece.style.setProperty("--confetti-y", `${Math.sin(angle) * distance - 30}px`);
+    piece.style.setProperty("--confetti-rotate", `${Math.random() * 480 - 240}deg`);
     return piece;
   });
 
   elements.confettiLayer.replaceChildren(...pieces);
-  window.setTimeout(() => elements.confettiLayer.replaceChildren(), 1100);
+  window.setTimeout(() => elements.confettiLayer.replaceChildren(), 900);
+}
+
+function updateActionLinks(food) {
+  const query = encodeURIComponent(food.name);
+  elements.nearbyLink.href = `https://map.baidu.com/search/${query}`;
+  elements.takeoutLink.href = `https://www.baidu.com/s?wd=${encodeURIComponent(`${food.name} 外卖`)}`;
+  elements.nearbyLink.setAttribute("aria-label", `在地图中搜索附近的${food.name}`);
+  elements.takeoutLink.setAttribute("aria-label", `搜索${food.name}外卖`);
+}
+
+function ensureResultVisible() {
+  const bounds = elements.foodName.getBoundingClientRect();
+  const isOutsideViewport = bounds.top < 0 || bounds.bottom > window.innerHeight;
+  if (!isOutsideViewport) {
+    return;
+  }
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  elements.foodCard.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "center"
+  });
 }
 
 function revealFood(food) {
   state.currentFood = food;
+  state.pendingFood = null;
   renderFood(food);
   setDeciding(false);
-
   elements.drawStage.textContent = "美味已开奖";
   elements.foodCard.classList.remove("is-revealed");
-  void elements.foodCard.offsetWidth;
-  elements.foodCard.classList.add("is-revealed");
+  requestAnimationFrame(() => elements.foodCard.classList.add("is-revealed"));
   launchConfetti();
+  updateActionLinks(food);
   elements.resultActions.hidden = false;
   setStatus(`就是它了：${food.name}！`);
   updateAvailability();
+  elements.foodName.setAttribute("tabindex", "-1");
+  elements.foodName.focus({ preventScroll: true });
+  requestAnimationFrame(ensureResultVisible);
 }
 
-function runPrizeRoll(foods, onComplete) {
+function runPrizeRoll(foods, result) {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const duration = reduceMotion ? REDUCED_MOTION_DURATION : SHUFFLE_DURATION;
+  if (reduceMotion) {
+    revealFood(result);
+    return;
+  }
+
   const startedAt = performance.now();
-
-  function tick(now) {
-    const elapsed = now - startedAt;
-    const progress = Math.min(elapsed / duration, 1);
-
+  const tick = (now) => {
+    const progress = Math.min((now - startedAt) / DRAW_DURATION, 1);
     renderFood(getRandomItem(foods), { preview: true });
 
-    if (progress < 0.42) {
-      elements.drawStage.textContent = "高速滚动中";
-    } else if (progress < 0.78) {
+    if (progress < 0.45) {
+      elements.drawStage.textContent = "菜单翻动中";
+    } else if (progress < 0.8) {
       elements.drawStage.textContent = "正在锁定美味";
     } else {
       elements.drawStage.textContent = "马上揭晓";
     }
 
-    if (progress >= 1) {
-      state.shuffleTimer = null;
-      onComplete();
+    if (progress >= 1 || state.skipRequested) {
+      state.drawTimer = null;
+      revealFood(result);
       return;
     }
 
-    const nextDelay = reduceMotion ? 130 : 58 + Math.pow(progress, 2.4) * 165;
-    state.shuffleTimer = window.setTimeout(() => requestAnimationFrame(tick), nextDelay);
-  }
+    const nextDelay = 86 + Math.pow(progress, 2) * 120;
+    state.drawTimer = window.setTimeout(() => requestAnimationFrame(tick), nextDelay);
+  };
 
   requestAnimationFrame(tick);
 }
 
 function decide() {
+  if (state.isDeciding) {
+    state.skipRequested = true;
+    return;
+  }
+
   const availableFoods = getAvailableFoods();
-  if (state.isDeciding || availableFoods.length === 0) {
+  if (availableFoods.length === 0) {
     updateAvailability();
     return;
   }
@@ -340,34 +298,42 @@ function decide() {
       ? availableFoods.filter((food) => food.id !== state.currentFood.id)
       : availableFoods;
 
-  setStatus("好运正在翻菜单...");
+  state.skipRequested = false;
+  state.pendingFood = getRandomItem(resultPool);
+  setStatus("好运正在翻菜单，再点一次可以立即揭晓。");
   setDeciding(true);
-  renderTags(["挑选中", "马上揭晓"]);
-  elements.foodReason.textContent = "菜单快速翻动中，答案马上出现。";
-
-  runPrizeRoll(availableFoods, () => {
-    revealFood(getRandomItem(resultPool));
-  });
+  renderTags(["挑选中", "可立即揭晓"]);
+  elements.foodReason.textContent = "菜单正在快速翻动，答案马上出现。";
+  runPrizeRoll(availableFoods, state.pendingFood);
 }
 
-function selectCategory(category, selectedButton) {
-  if (state.isDeciding) {
-    return;
-  }
-
-  state.selectedCategory = category;
+function resetCurrentResult(message) {
   state.currentFood = null;
   elements.drawStage.textContent = "等待开奖";
   elements.resultActions.hidden = true;
-
-  document.querySelectorAll(".filter-chip").forEach((button) => {
-    const isSelected = button === selectedButton;
-    button.classList.toggle("is-active", isSelected);
-    button.setAttribute("aria-pressed", String(isSelected));
-  });
-
-  setStatus(category === CATEGORY_ALL ? "已切换到全部菜单。" : `只看${category}，开始挑选吧。`);
+  renderPlaceholder();
+  setStatus(message);
   updateAvailability();
+}
+
+function updatePressedState(group, selectedButton, filterName) {
+  group.querySelectorAll(`[data-filter="${filterName}"], button:not([data-filter])`).forEach((button) => {
+    if (button.dataset.filter && button.dataset.filter !== filterName) {
+      return;
+    }
+    const selected = button === selectedButton;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function selectSimpleFilter(filterName, value, button, group) {
+  if (state.isDeciding || state.filters[filterName] === value) {
+    return;
+  }
+  state.filters[filterName] = value;
+  updatePressedState(group, button, filterName);
+  resetCurrentResult("筛选已更新，看看今天会抽到什么。");
 }
 
 function excludeCurrentFood() {
@@ -375,46 +341,95 @@ function excludeCurrentFood() {
     return;
   }
 
-  const excludedName = state.currentFood.name;
-  state.excludedIds.add(state.currentFood.id);
+  const excluded = state.currentFood;
+  state.excludedIds.add(excluded.id);
+  state.lastExcludedId = excluded.id;
+  persistExclusions();
   state.currentFood = null;
   elements.resultActions.hidden = true;
+  elements.undoExclusion.hidden = false;
+  renderPlaceholder();
   updateAvailability();
+  setStatus(`已跳过${excluded.name}。可以撤销，或继续抽一道。`);
+}
 
-  if (getAvailableFoods().length > 0) {
-    setStatus(`已暂时跳过${excludedName}，正在换一道...`);
-    window.setTimeout(decide, 320);
+function undoLastExclusion() {
+  if (!state.lastExcludedId) {
+    return;
   }
+  const food = state.foods.find((item) => item.id === state.lastExcludedId);
+  state.excludedIds.delete(state.lastExcludedId);
+  state.lastExcludedId = null;
+  persistExclusions();
+  elements.undoExclusion.hidden = true;
+  setStatus(food ? `已恢复${food.name}。` : "已恢复刚才跳过的菜品。");
+  updateAvailability();
 }
 
 function resetExclusions() {
   state.excludedIds.clear();
-  elements.drawStage.textContent = "等待开奖";
+  state.lastExcludedId = null;
+  persistExclusions();
+  elements.undoExclusion.hidden = true;
   setStatus("已恢复完整菜单，所有菜品都可以再次抽到。");
   updateAvailability();
 }
 
-function bindEvents() {
-  elements.decideButton.addEventListener("click", decide);
-  elements.againButton.addEventListener("click", decide);
-  elements.excludeButton.addEventListener("click", excludeCurrentFood);
-  elements.resetExclusions.addEventListener("click", resetExclusions);
-
-  elements.filterList.addEventListener("click", (event) => {
+function bindSingleSelect(group, filterName) {
+  group.addEventListener("click", (event) => {
     const button = event.target.closest(".filter-chip");
     if (button) {
-      selectCategory(button.dataset.category, button);
+      selectSimpleFilter(filterName, button.dataset.value, button, group);
+    }
+  });
+}
+
+function bindEvents() {
+  elements.decideButton.addEventListener("click", decide);
+  elements.quickDecideButton.addEventListener("click", decide);
+  elements.againButton.addEventListener("click", decide);
+  elements.excludeButton.addEventListener("click", excludeCurrentFood);
+  elements.undoExclusion.addEventListener("click", undoLastExclusion);
+  elements.resetExclusions.addEventListener("click", resetExclusions);
+
+  bindSingleSelect(elements.categoryFilter, "category");
+  bindSingleSelect(elements.mealFilter, "meal");
+
+  elements.preferenceFilter.addEventListener("click", (event) => {
+    const button = event.target.closest(".filter-chip");
+    if (button) {
+      selectSimpleFilter(button.dataset.filter, button.dataset.value, button, elements.preferenceFilter);
     }
   });
 }
 
 async function initialize() {
   bindEvents();
-  state.foods = await loadFoods();
-  elements.decideButton.disabled = false;
-  elements.decideLabel.textContent = "帮我决定！";
-  setStatus("菜单准备好了，交给今天的好运吧。");
-  updateAvailability();
+  try {
+    state.foods = await loadFoods();
+    state.excludedIds = new Set(
+      [...state.excludedIds].filter((id) => state.foods.some((food) => food.id === id))
+    );
+    persistExclusions();
+    renderCategoryFilters();
+    setStatus("菜单准备好了，直接抽，或者先给一点方向。");
+    updateAvailability();
+  } catch (error) {
+    console.error(error);
+    elements.availableCount.textContent = "菜单加载失败";
+    elements.decideLabel.textContent = "请通过本地服务打开";
+    elements.decideButton.disabled = true;
+    elements.quickDecideButton.disabled = true;
+    setStatus("未能加载菜单。请运行 ./run.sh start 后通过浏览器访问。", true);
+  }
 }
 
 initialize();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch((error) => {
+      console.error("Service Worker 注册失败：", error);
+    });
+  });
+}

@@ -4,11 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ff8f70">
+    <meta name="application-name" content="今天吃什么">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="今天吃什么">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta
       name="description"
       content="不知道今天吃什么？轻轻一点，随机挑选你的下一顿美食。"
     >
     <title>今天吃什么？</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
@@ -36,31 +44,52 @@
 
       <section class="filter-section" aria-labelledby="filter-title">
         <div class="section-heading">
-          <h2 id="filter-title"><span aria-hidden="true">🎟️</span> 先选一张口味券</h2>
+          <h2 id="filter-title"><span aria-hidden="true">🎟️</span> 给今天一点方向</h2>
           <span id="available-count" class="available-count">正在准备菜单...</span>
         </div>
-        <div id="filter-list" class="filter-list" role="group" aria-label="菜品分类筛选">
-          <button class="filter-chip is-active" type="button" data-category="全部" aria-pressed="true">
-            全部
-          </button>
-          <button class="filter-chip" type="button" data-category="中餐" aria-pressed="false">中餐</button>
-          <button class="filter-chip" type="button" data-category="面食" aria-pressed="false">面食</button>
-          <button class="filter-chip" type="button" data-category="火锅烧烤" aria-pressed="false">
-            火锅烧烤
-          </button>
-          <button class="filter-chip" type="button" data-category="日料韩餐" aria-pressed="false">
-            日料韩餐
-          </button>
-          <button class="filter-chip" type="button" data-category="西餐快餐" aria-pressed="false">
-            西餐快餐
-          </button>
-          <button class="filter-chip" type="button" data-category="轻食甜品" aria-pressed="false">
-            轻食甜品
-          </button>
+        <div class="filter-stack">
+          <div class="filter-row">
+            <span class="filter-label">菜系</span>
+            <div class="filter-scroll">
+              <div id="category-filter" class="filter-list" role="group" aria-label="菜系筛选"></div>
+            </div>
+          </div>
+          <div class="filter-row">
+            <span class="filter-label">这顿</span>
+            <div class="filter-scroll">
+              <div id="meal-filter" class="filter-list" role="group" aria-label="用餐类型筛选">
+                <button class="filter-chip is-active" type="button" data-value="全部" aria-pressed="true">都可以</button>
+                <button class="filter-chip" type="button" data-value="正餐" aria-pressed="false">正餐</button>
+                <button class="filter-chip" type="button" data-value="轻食" aria-pressed="false">轻食</button>
+                <button class="filter-chip" type="button" data-value="甜品" aria-pressed="false">甜品</button>
+              </div>
+            </div>
+          </div>
+          <div class="filter-row filter-row-compact">
+            <span class="filter-label">偏好</span>
+            <div class="filter-scroll">
+              <div id="preference-filter" class="filter-list" role="group" aria-label="预算和口味筛选">
+                <button class="filter-chip is-active" type="button" data-filter="budget" data-value="全部" aria-pressed="true">不限预算</button>
+                <button class="filter-chip" type="button" data-filter="budget" data-value="实惠" aria-pressed="false">实惠</button>
+                <button class="filter-chip" type="button" data-filter="budget" data-value="品质" aria-pressed="false">品质</button>
+                <button class="filter-chip is-active" type="button" data-filter="spice" data-value="全部" aria-pressed="true">不限辣度</button>
+                <button class="filter-chip" type="button" data-filter="spice" data-value="不辣" aria-pressed="false">不辣</button>
+                <button class="filter-chip" type="button" data-filter="spice" data-value="辣" aria-pressed="false">想吃辣</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       <section class="decision-stage" aria-labelledby="food-name">
+        <div class="quick-action">
+          <button id="quick-decide-button" class="button button-primary quick-decide-button" type="button" disabled>
+            <span aria-hidden="true">✦</span>
+            <span>马上帮我选</span>
+          </button>
+          <p>不想筛也没关系，直接交给好运。</p>
+        </div>
+
         <div class="machine">
           <div class="machine-marquee" aria-hidden="true">
             <span class="marquee-light"></span>
@@ -135,9 +164,20 @@
             <span aria-hidden="true">×</span>
             暂时不吃这个
           </button>
+          <a id="nearby-link" class="button button-link" href="#" target="_blank" rel="noopener">
+            <span aria-hidden="true">⌖</span>
+            附近找找
+          </a>
+          <a id="takeout-link" class="button button-link" href="#" target="_blank" rel="noopener">
+            <span aria-hidden="true">↗</span>
+            搜索外卖
+          </a>
         </div>
 
         <p id="status-message" class="status-message" role="status" aria-live="polite"></p>
+        <button id="undo-exclusion" class="text-button undo-button" type="button" hidden>
+          撤销刚才的跳过
+        </button>
       </section>
 
       <footer class="app-footer">
@@ -149,6 +189,7 @@
     </main>
 
     <noscript>请开启 JavaScript 后使用“今天吃什么”。</noscript>
+    <script src="js/food-rules.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>
