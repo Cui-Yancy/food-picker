@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "food-lucky-box-v1";
+const CACHE_NAME = "food-lucky-box-v3";
 const APP_SHELL = [
   "./",
   "./index.html",

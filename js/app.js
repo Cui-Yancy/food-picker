@@ -210,10 +210,13 @@ function launchConfetti() {
 
 function updateActionLinks(food) {
   const query = encodeURIComponent(food.name);
-  elements.nearbyLink.href = `https://map.baidu.com/search/${query}`;
-  elements.takeoutLink.href = `https://www.baidu.com/s?wd=${encodeURIComponent(`${food.name} 外卖`)}`;
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  elements.nearbyLink.href = isAndroid
+    ? `androidamap://poi?sourceApplication=choose_what_to_eat&keywords=${query}&dev=0`
+    : `iosamap://poi?sourceApplication=choose_what_to_eat&name=${query}&dev=0`;
+  elements.takeoutLink.href = `imeituan://www.meituan.com/search?q=${encodeURIComponent(`${food.name} 外卖`)}`;
   elements.nearbyLink.setAttribute("aria-label", `在地图中搜索附近的${food.name}`);
-  elements.takeoutLink.setAttribute("aria-label", `搜索${food.name}外卖`);
+  elements.takeoutLink.setAttribute("aria-label", `在美团中搜索${food.name}外卖`);
 }
 
 function ensureResultVisible() {
