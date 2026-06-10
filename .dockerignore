@@ -1,0 +1,23 @@
+# ---- 今天吃什么？ ----
+# .dockerignore —— 减少构建上下文大小
+
+# 运行时目录（容器内自动创建）
+logs/
+run/
+__pycache__/
+*.pyc
+
+# 配置与元数据
+.git/
+.gitignore
+.gitattributes
+README.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 开发与测试
+tests/
+.agents/
+.claude/
+.codex/

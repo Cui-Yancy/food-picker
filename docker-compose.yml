@@ -1,0 +1,45 @@
+# ---- 今天吃什么？ ----
+# docker-compose 部署配置
+#
+# 使用方式：
+#   docker-compose up -d          # 启动服务
+#   docker-compose down           # 停止并移除容器
+#   docker-compose logs -f        # 查看日志
+#
+# NAS 部署建议：
+#   将本目录映射到 NAS 上的持久化存储路径，
+#   ./data/custom_items.json 中的数据会保持持久化。
+
+services:
+  food-picker:
+    build: .
+    container_name: food-picker
+    restart: unless-stopped
+
+    ports:
+      # 宿主机端口:容器端口
+      # 如 NAS 已占用 8080，将左侧改为其他端口
+      - "8080:8080"
+
+    volumes:
+      # 持久化数据 —— 共享美食库等会保留在宿主机的 ./data/ 中
+      - ./data:/app/data
+
+      # （可选）持久化日志
+      # - ./logs:/app/logs
+
+    environment:
+      # Python 运行时设置
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+
+      # （可选）覆盖服务器参数
+      # HOST: "0.0.0.0"
+      # PORT: "8080"
+
+    # （可选）资源限制 —— NAS 上按需调整
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "0.5"
+    #       memory: 128M
