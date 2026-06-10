@@ -4,6 +4,32 @@ const { FILTER_ALL, matchesFilters, validateFoods } = FoodRules;
 const DRAW_DURATION = 900;
 const STORAGE_KEY = "food-lucky-box-exclusions-v1";
 const CONFETTI_COLORS = ["#ff6655", "#ffc83d", "#9edbc5", "#c5b2ee", "#ffffff"];
+const CUISINE_OPTIONS = {
+  "中餐": [
+    "家常菜", "川湘风味", "粤式风味", "江浙风味", "东北风味",
+    "西北风味", "清真风味", "地方小吃", "其他中餐"
+  ],
+  "面食": [
+    "汤面", "拌面", "炒面", "米粉米线", "饺子馄饨",
+    "包子馒头", "饼类", "馍类", "地方小吃", "其他面食"
+  ],
+  "火锅烧烤": [
+    "麻辣火锅", "清汤火锅", "特色火锅", "烤肉", "烤串",
+    "烤鱼", "串串香", "其他火锅烧烤"
+  ],
+  "日料韩餐": [
+    "寿司刺身", "日式拉面", "日式定食", "日式小吃",
+    "韩式烤肉", "韩式锅物", "韩式主食", "韩国小吃", "其他日料韩餐"
+  ],
+  "异国料理": [
+    "西餐", "意大利风味", "美式快餐", "东南亚风味",
+    "印度风味", "墨西哥风味", "中东风味", "其他异国料理"
+  ],
+  "轻食甜品": [
+    "沙拉轻食", "三明治贝果", "烘焙面包", "蛋糕甜点",
+    "中式甜品", "冰品饮品", "水果酸奶", "其他轻食甜品"
+  ]
+};
 
 const state = {
   foods: [],
@@ -257,13 +283,7 @@ function showLibraryList() {
 }
 
 function populateCuisineOptions(category, selectedCuisine = "") {
-  const cuisines = [
-    ...new Set(
-      state.foods
-        .filter((food) => food.category === category && !food.id.startsWith("custom-"))
-        .map((food) => food.cuisine)
-    )
-  ].sort((first, second) => first.localeCompare(second, "zh-CN"));
+  const cuisines = [...(CUISINE_OPTIONS[category] || [])];
 
   if (selectedCuisine && !cuisines.includes(selectedCuisine)) {
     cuisines.push(selectedCuisine);
@@ -305,7 +325,6 @@ function showCustomItemForm(item = null) {
       meal: item.meal,
       budget: item.budget,
       spice: item.spice,
-      reason: item.reason,
       searchKeyword: item.searchKeyword || item.name
     }).forEach(([name, value]) => {
       const field = elements.customItemForm.elements.namedItem(name);
@@ -325,7 +344,7 @@ function formPayload() {
     category: data.get("category"),
     cuisine: data.get("cuisine"),
     tags: [],
-    reason: data.get("reason") || "",
+    reason: "",
     emoji: data.get("emoji") || "🍽️",
     image: "",
     meal: data.get("meal"),

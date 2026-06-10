@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "food-lucky-box-v4";
+const CACHE_NAME = "food-lucky-box-v5";
 const DATA_CACHE_NAME = "food-lucky-box-data-v1";
 const APP_SHELL = [
   "./",
