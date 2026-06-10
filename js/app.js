@@ -256,6 +256,31 @@ function showLibraryList() {
   elements.formMessage.textContent = "";
 }
 
+function populateCuisineOptions(category, selectedCuisine = "") {
+  const cuisines = [
+    ...new Set(
+      state.foods
+        .filter((food) => food.category === category && !food.id.startsWith("custom-"))
+        .map((food) => food.cuisine)
+    )
+  ].sort((first, second) => first.localeCompare(second, "zh-CN"));
+
+  if (selectedCuisine && !cuisines.includes(selectedCuisine)) {
+    cuisines.push(selectedCuisine);
+  }
+
+  const cuisineField = elements.customItemForm.elements.namedItem("cuisine");
+  cuisineField.replaceChildren(
+    ...cuisines.map((cuisine) => {
+      const option = document.createElement("option");
+      option.value = cuisine;
+      option.textContent = cuisine;
+      option.selected = cuisine === selectedCuisine;
+      return option;
+    })
+  );
+}
+
 function showCustomItemForm(item = null) {
   elements.libraryListView.hidden = true;
   elements.customItemForm.hidden = false;
@@ -265,6 +290,10 @@ function showCustomItemForm(item = null) {
   elements.saveCustomItem.textContent = item ? "保存修改" : "保存到家庭美食库";
   elements.formMessage.textContent = "";
   elements.formMessage.classList.remove("is-warning");
+  const category = item
+    ? item.category
+    : elements.customItemForm.elements.namedItem("category").value;
+  populateCuisineOptions(category, item ? item.cuisine : "");
 
   if (item) {
     Object.entries({
@@ -276,7 +305,6 @@ function showCustomItemForm(item = null) {
       meal: item.meal,
       budget: item.budget,
       spice: item.spice,
-      tags: item.tags.join(", "),
       reason: item.reason,
       searchKeyword: item.searchKeyword || item.name
     }).forEach(([name, value]) => {
@@ -296,11 +324,8 @@ function formPayload() {
     name: data.get("name"),
     category: data.get("category"),
     cuisine: data.get("cuisine"),
-    tags: String(data.get("tags") || "")
-      .split(/[,，]/)
-      .map((tag) => tag.trim())
-      .filter(Boolean),
-    reason: data.get("reason"),
+    tags: [],
+    reason: data.get("reason") || "",
     emoji: data.get("emoji") || "🍽️",
     image: "",
     meal: data.get("meal"),
@@ -438,7 +463,8 @@ function renderFood(food, { preview = false } = {}) {
 
   if (!preview) {
     renderTags([...food.tags, food.budget]);
-    elements.foodReason.textContent = food.reason;
+    elements.foodReason.textContent =
+      food.reason || "家庭共享的美食选择，看看今天是否和它有缘。";
   }
 }
 
@@ -694,6 +720,9 @@ function bindEvents() {
   elements.addCustomItem.addEventListener("click", () => showCustomItemForm());
   elements.cancelCustomItem.addEventListener("click", showLibraryList);
   elements.customItemForm.addEventListener("submit", saveCustomItem);
+  elements.customItemForm.elements.namedItem("category").addEventListener("change", (event) => {
+    populateCuisineOptions(event.target.value);
+  });
   elements.customItemsList.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action]");
     if (!button) {

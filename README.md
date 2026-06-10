@@ -197,6 +197,8 @@ id, name, category, cuisine, tags, reason, image, emoji
 共享数据最多 1000 条。编辑和删除会检查 revision；如果另一台设备已经修改数据，
 当前操作会提示刷新后重试，避免静默覆盖。
 
+新增共享美食时，菜系从当前分类已有菜系列表中选择。标签不需要填写，推荐理由可留空。
+
 ## 备份与恢复
 
 建议定期备份 `data/custom_items.json`。恢复时：

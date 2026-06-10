@@ -84,7 +84,7 @@ def normalize_item(value: object) -> dict:
         "category": require_text(value.get("category"), "分类", 20),
         "cuisine": require_text(value.get("cuisine"), "菜系", 30),
         "tags": normalized_tags,
-        "reason": require_text(value.get("reason"), "推荐理由", 160),
+        "reason": optional_text(value.get("reason"), "推荐理由", 160),
         "emoji": optional_text(value.get("emoji"), "图标", 8, "🍽️") or "🍽️",
         "image": optional_text(value.get("image"), "图片地址", 500),
         "meal": validate_choice(value.get("meal"), "用餐类型", MEALS),

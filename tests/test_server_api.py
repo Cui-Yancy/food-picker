@@ -158,6 +158,16 @@ class ServerApiTest(unittest.TestCase):
         self.assertEqual(status, 428)
         self.assertIn("If-Match", payload["error"])
 
+    def test_reason_and_tags_can_be_empty(self) -> None:
+        status, payload, _ = self.request(
+            "POST",
+            "/api/custom-items",
+            self.sample_item(tags=[], reason=""),
+        )
+        self.assertEqual(status, 201)
+        self.assertEqual(payload["data"]["tags"], [])
+        self.assertEqual(payload["data"]["reason"], "")
+
 
 if __name__ == "__main__":
     unittest.main()
