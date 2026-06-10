@@ -1,11 +1,13 @@
 # 今天吃什么
 
-一个纯静态的随机选餐网页。项目使用 Python 自带的 HTTP Server 提供局域网访问，
-不依赖 Flask、Node.js 或数据库。
+一个支持家庭局域网共享的随机选餐网页。项目使用 Python 标准库同时提供静态页面和
+JSON REST API，不依赖 Flask、Node.js、数据库或其他第三方运行时依赖。
 
 ## 功能
 
 - 按菜系、正餐/轻食/甜品、预算和辣度筛选
+- 家庭成员通过局域网共享自定义餐厅和菜品
+- 支持新增、编辑、删除和手动同步共享美食
 - 短动画随机抽取，可再次点击立即揭晓
 - 暂时跳过不想吃的菜品，并支持撤销和本地持久化
 - 结果可直接搜索附近餐厅或外卖
@@ -40,6 +42,9 @@ python3 --version
 - `run/app.port`：服务实际使用的端口
 
 脚本会在服务已经运行时阻止重复启动。
+
+服务由 `server.py` 提供，同时处理页面资源和 `/api/` 请求。请勿再使用
+`python3 -m http.server` 启动，否则家庭共享功能无法写入数据。
 
 ## 关闭服务
 
@@ -99,7 +104,12 @@ Android Chrome：打开站点后，从浏览器菜单选择“添加到主屏幕
 
 iOS Safari：打开站点后，点击“分享”，再选择“添加到主屏幕”。iOS 会以独立应用模式启动。
 
-首次在线打开页面后，核心页面、样式、脚本、菜单数据和图标会被缓存，之后可离线访问。
+首次在线打开页面后，核心页面、样式、脚本、最近一次合并菜单和图标会被缓存，
+之后可使用最近一次成功同步的菜单离线抽取。
+
+静态页面可以离线打开，但家庭共享库必须连接到 Ubuntu 家庭服务器才能同步和修改。
+合并菜单 API 使用网络优先策略：在线时总是获取服务器最新数据，离线时才回退到缓存。
+新增、编辑和删除 API 始终只走网络。
 
 ## 可选配置
 
@@ -119,6 +129,7 @@ HOST=0.0.0.0 PORT=9000 ./run.sh start
 ├── css/
 │   └── style.css
 ├── data/
+│   ├── custom_items.json
 │   └── foods.json
 ├── js/
 │   ├── app.js
@@ -129,7 +140,8 @@ HOST=0.0.0.0 PORT=9000 ./run.sh start
 │   ├── icon-512.png
 │   └── app-icon-source.png
 ├── tests/
-│   └── food-rules.test.js
+│   ├── food-rules.test.js
+│   └── test_server_api.py
 ├── logs/              # 首次运行时创建
 │   └── app.log
 ├── run/               # 首次运行时创建
@@ -140,6 +152,7 @@ HOST=0.0.0.0 PORT=9000 ./run.sh start
 ├── manifest.json
 ├── README.md
 ├── service-worker.js
+├── server.py
 └── run.sh
 ```
 
@@ -147,20 +160,66 @@ HOST=0.0.0.0 PORT=9000 ./run.sh start
 
 ## 运行测试
 
-测试使用 Node.js 内置测试运行器，不需要安装依赖：
+前端规则测试使用 Node.js 内置测试运行器：
 
 ```bash
 node --test tests/food-rules.test.js
 ```
 
-测试覆盖菜单字段和重复 ID 校验、筛选属性推导、组合筛选以及菜品排除。
+服务端 API 测试使用 Python 标准库：
+
+```bash
+python3 -m unittest tests/test_server_api.py -v
+```
+
+测试覆盖菜单字段和重复 ID 校验、显式筛选属性、组合筛选、共享记录增删改、
+revision 冲突、输入校验和 JSON 持久化。
 
 ## 数据维护
 
-`data/foods.json` 是唯一菜单数据源。页面分类会根据该文件动态生成；每道菜需要包含：
+`data/foods.json` 是只读预设菜单，仍可按原方式人工维护。页面分类会根据预设菜单和
+家庭共享菜单动态生成；每道预设菜需要包含：
 
 ```text
 id, name, category, cuisine, tags, reason, image, emoji
 ```
 
 用餐类型、预算档位和辣度由 `js/food-rules.js` 根据菜名、菜系和标签推导。
+
+`data/custom_items.json` 是家庭共享可写数据。请优先通过页面中的“家庭美食库”管理，
+不要在服务运行期间手工编辑。服务端每次修改都会：
+
+- 在进程锁内读取最新 revision
+- 将旧文件备份为 `data/custom_items.json.bak`
+- 写入同目录临时文件并同步到磁盘
+- 使用原子替换更新正式文件
+
+共享数据最多 1000 条。编辑和删除会检查 revision；如果另一台设备已经修改数据，
+当前操作会提示刷新后重试，避免静默覆盖。
+
+## 备份与恢复
+
+建议定期备份 `data/custom_items.json`。恢复时：
+
+```bash
+./run.sh stop
+cp /path/to/backup/custom_items.json data/custom_items.json
+./run.sh start
+```
+
+如果最近一次写入后的文件异常，可在停止服务后检查
+`data/custom_items.json.bak`，确认内容完整后再替换正式文件。
+
+## API
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `GET` | `/api/health` | 服务健康检查 |
+| `GET` | `/api/foods` | 获取预设与共享合并菜单 |
+| `GET` | `/api/custom-items` | 获取共享库及 revision |
+| `POST` | `/api/custom-items` | 新增共享美食 |
+| `PUT` | `/api/custom-items/{id}` | 修改共享美食 |
+| `DELETE` | `/api/custom-items/{id}` | 删除共享美食 |
+
+修改和删除必须通过 `If-Match` 请求头携带当前 revision。项目不提供用户登录或权限
+管理，因此应只在可信家庭局域网内开放端口，不要直接映射到公网。

@@ -59,3 +59,38 @@ test("invalid or duplicate records are rejected", () => {
   assert.throws(() => validateFoods([{ id: "broken" }]), /字段不完整/);
   assert.throws(() => validateFoods([foods[0], foods[0]]), /菜单 ID 重复/);
 });
+
+test("explicit custom filter fields override keyword inference", () => {
+  const [custom] = validateFoods([
+    {
+      id: "custom-test",
+      name: "家庭不辣咖喱",
+      category: "中餐",
+      cuisine: "家常菜",
+      tags: ["咖喱"],
+      reason: "测试显式筛选字段。",
+      emoji: "🍛",
+      meal: "轻食",
+      budget: "品质",
+      spice: "不辣"
+    }
+  ]);
+
+  assert.equal(custom.meal, "轻食");
+  assert.equal(custom.budget, "品质");
+  assert.equal(custom.spice, "不辣");
+});
+
+test("invalid explicit filter fields are rejected", () => {
+  assert.throws(
+    () =>
+      validateFoods([
+        {
+          ...foods[0],
+          id: "custom-invalid",
+          meal: "夜宵"
+        }
+      ]),
+    /筛选字段不正确/
+  );
+});

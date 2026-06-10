@@ -1,6 +1,7 @@
 "use strict";
 
-const CACHE_NAME = "food-lucky-box-v3";
+const CACHE_NAME = "food-lucky-box-v4";
+const DATA_CACHE_NAME = "food-lucky-box-data-v1";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -8,7 +9,6 @@ const APP_SHELL = [
   "./css/style.css",
   "./js/food-rules.js",
   "./js/app.js",
-  "./data/foods.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
@@ -28,7 +28,9 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .filter(
+              (cacheName) => ![CACHE_NAME, DATA_CACHE_NAME].includes(cacheName)
+            )
             .map((cacheName) => caches.delete(cacheName))
         )
       )
@@ -45,6 +47,26 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (url.pathname === "/api/foods") {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(DATA_CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  if (url.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(request));
     return;
   }
 

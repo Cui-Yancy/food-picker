@@ -45,7 +45,14 @@
       <section class="filter-section" aria-labelledby="filter-title">
         <div class="section-heading">
           <h2 id="filter-title"><span aria-hidden="true">🎟️</span> 给今天一点方向</h2>
-          <span id="available-count" class="available-count">正在准备菜单...</span>
+          <div class="library-summary">
+            <span id="available-count" class="available-count">正在准备菜单...</span>
+            <button id="open-library" class="library-button" type="button">
+              <span aria-hidden="true">⌂</span>
+              家庭美食库
+              <span id="custom-count" class="library-count">0</span>
+            </button>
+          </div>
         </div>
         <div class="filter-stack">
           <div class="filter-row">
@@ -187,6 +194,110 @@
         </button>
       </footer>
     </main>
+
+    <dialog id="library-dialog" class="library-dialog" aria-labelledby="library-title">
+      <div class="library-panel">
+        <header class="library-header">
+          <div>
+            <p class="library-eyebrow">局域网共享</p>
+            <h2 id="library-title">家庭美食库</h2>
+            <p id="sync-status" class="sync-status" role="status">正在同步...</p>
+          </div>
+          <button id="close-library" class="icon-button" type="button" aria-label="关闭家庭美食库">×</button>
+        </header>
+
+        <div id="library-list-view">
+          <div class="library-toolbar">
+            <button id="add-custom-item" class="button button-secondary" type="button">＋ 新增美食</button>
+            <button id="refresh-library" class="button button-ghost" type="button">↻ 同步</button>
+          </div>
+          <div id="custom-items-list" class="custom-items-list"></div>
+          <p id="empty-library" class="empty-library">
+            还没有家庭共享美食。添加一家常去餐厅或一道私藏菜吧。
+          </p>
+        </div>
+
+        <form id="custom-item-form" class="custom-item-form" hidden>
+          <input id="custom-item-id" type="hidden">
+          <div class="form-heading">
+            <h3 id="form-title">新增美食</h3>
+            <button id="cancel-custom-item" class="text-button" type="button">返回列表</button>
+          </div>
+
+          <div class="form-grid">
+            <label class="form-field form-field-wide">
+              <span>名称 *</span>
+              <input id="custom-name" name="name" type="text" maxlength="60" required placeholder="例如：小区门口川菜馆">
+            </label>
+            <label class="form-field">
+              <span>类型 *</span>
+              <select id="custom-item-type" name="itemType" required>
+                <option value="restaurant">餐厅</option>
+                <option value="food">菜品</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>图标</span>
+              <input id="custom-emoji" name="emoji" type="text" maxlength="8" value="🍽️">
+            </label>
+            <label class="form-field">
+              <span>分类 *</span>
+              <select id="custom-category" name="category" required>
+                <option value="中餐">中餐</option>
+                <option value="面食">面食</option>
+                <option value="火锅烧烤">火锅烧烤</option>
+                <option value="日料韩餐">日料韩餐</option>
+                <option value="异国料理">异国料理</option>
+                <option value="轻食甜品">轻食甜品</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>菜系 *</span>
+              <input id="custom-cuisine" name="cuisine" type="text" maxlength="30" required placeholder="例如：川菜">
+            </label>
+            <label class="form-field">
+              <span>这顿 *</span>
+              <select id="custom-meal" name="meal" required>
+                <option value="正餐">正餐</option>
+                <option value="轻食">轻食</option>
+                <option value="甜品">甜品</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>预算 *</span>
+              <select id="custom-budget" name="budget" required>
+                <option value="实惠">实惠</option>
+                <option value="品质">品质</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>辣度 *</span>
+              <select id="custom-spice" name="spice" required>
+                <option value="不辣">不辣</option>
+                <option value="辣">辣</option>
+              </select>
+            </label>
+            <label class="form-field form-field-wide">
+              <span>标签</span>
+              <input id="custom-tags" name="tags" type="text" maxlength="100" placeholder="用逗号分隔，例如：附近, 家庭收藏">
+            </label>
+            <label class="form-field form-field-wide">
+              <span>推荐理由 *</span>
+              <textarea id="custom-reason" name="reason" maxlength="160" required placeholder="为什么值得加入家庭菜单？"></textarea>
+            </label>
+            <label class="form-field form-field-wide">
+              <span>搜索关键词</span>
+              <input id="custom-search-keyword" name="searchKeyword" type="text" maxlength="80" placeholder="默认使用名称">
+            </label>
+          </div>
+
+          <p id="form-message" class="form-message" role="status"></p>
+          <button id="save-custom-item" class="button button-primary form-submit" type="submit">
+            保存到家庭美食库
+          </button>
+        </form>
+      </div>
+    </dialog>
 
     <noscript>请开启 JavaScript 后使用“今天吃什么”。</noscript>
     <script src="js/food-rules.js"></script>

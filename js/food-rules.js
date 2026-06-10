@@ -14,19 +14,19 @@
 
   function enrichFood(food) {
     const searchable = [food.name, food.cuisine, ...food.tags].join(" ");
-    let meal = "正餐";
+    let inferredMeal = "正餐";
 
     if (includesAny(searchable, DESSERT_WORDS)) {
-      meal = "甜品";
+      inferredMeal = "甜品";
     } else if (includesAny(searchable, LIGHT_WORDS)) {
-      meal = "轻食";
+      inferredMeal = "轻食";
     }
 
     return {
       ...food,
-      meal,
-      budget: includesAny(searchable, PREMIUM_WORDS) ? "品质" : "实惠",
-      spice: includesAny(searchable, SPICY_WORDS) ? "辣" : "不辣"
+      meal: food.meal || inferredMeal,
+      budget: food.budget || (includesAny(searchable, PREMIUM_WORDS) ? "品质" : "实惠"),
+      spice: food.spice || (includesAny(searchable, SPICY_WORDS) ? "辣" : "不辣")
     };
   }
 
@@ -40,6 +40,13 @@
       const missing = REQUIRED_FIELDS.filter((field) => food[field] === undefined);
       if (missing.length > 0 || !Array.isArray(food.tags)) {
         throw new Error(`第 ${index + 1} 道菜字段不完整`);
+      }
+      if (
+        (food.meal && !["正餐", "轻食", "甜品"].includes(food.meal)) ||
+        (food.budget && !["实惠", "品质"].includes(food.budget)) ||
+        (food.spice && !["不辣", "辣"].includes(food.spice))
+      ) {
+        throw new Error(`第 ${index + 1} 道菜筛选字段不正确`);
       }
       if (ids.has(food.id)) {
         throw new Error(`菜单 ID 重复：${food.id}`);

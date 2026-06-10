@@ -30,7 +30,7 @@ is_running() {
   fi
 
   command_line="$(tr '\0' ' ' < "/proc/${pid}/cmdline" 2>/dev/null || true)"
-  [[ "${command_line}" == *"-m http.server"* && "${command_line}" == *"${PROJECT_DIR}"* ]]
+  [[ "${command_line}" == *"${PROJECT_DIR}/server.py"* ]]
 }
 
 active_port() {
@@ -98,9 +98,9 @@ start_service() {
   fi
 
   echo "正在启动服务..."
-  nohup python3 -m http.server "${PORT}" \
-    --bind "${HOST}" \
-    --directory "${PROJECT_DIR}" \
+  nohup python3 "${PROJECT_DIR}/server.py" \
+    --host "${HOST}" \
+    --port "${PORT}" \
     >> "${LOG_FILE}" 2>&1 &
   pid=$!
   printf '%s\n' "${pid}" > "${PID_FILE}"
