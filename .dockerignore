@@ -13,7 +13,7 @@ __pycache__/
 .gitattributes
 README.md
 Dockerfile
-docker-compose.yml
+docker-compose.yaml
 .dockerignore
 
 # 开发与测试
